@@ -459,17 +459,12 @@
 							-- paths as before
 							nodePath = string.sub(nodePath, matchEnd + 1)
 						end
-						if string.find(nodePath,'/')  then
-							if string.find(nodePath,'^%.')then
-								--error('relative paths are not currently supported for frameworks')
-								pth = path.getrelative(tr.project.location, node.path)
-								--print(tr.project.location, node.path , pth)
-								src = "SOURCE_ROOT"
-								variable = src
-							else
-								pth = nodePath
-								src = "<absolute>"
-							end
+						if string.find(nodePath,'/') and string.find(nodePath,'^%.') then
+							--error('relative paths are not currently supported for frameworks')
+							pth = path.getrelative(tr.project.location, node.path)
+							--print(tr.project.location, node.path , pth)
+							src = "SOURCE_ROOT"
+							variable = src
 						end
 						-- if it starts with a variable, use that as the src instead
 						if variable then
@@ -479,6 +474,9 @@
 							if string.find(pth, '^/') then
 								pth = string.sub(pth, 2)
 							end
+						elseif string.sub(nodePath, 1, 1) == '/' then
+							pth = nodePath
+							src = "<absolute>"
 						else
 							pth = "System/Library/Frameworks/" .. node.path
 							src = "SDKROOT"

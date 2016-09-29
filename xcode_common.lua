@@ -323,6 +323,7 @@
 		return ("%08X%08X%08X"):format(name:hash(16777619), name:hash(2166136261), name:hash(46577619))
 	end
 
+	local XCODE_ID_EMBED_FRAMEWORKS = xcode.newid("Embed Frameworks")
 
 --
 -- Create a product tree node and all projects in a workspace; assigning IDs
@@ -372,6 +373,10 @@
 					settings[node.buildid] = function(level)
 						_p(level,'%s /* %s in %s */ = {isa = PBXBuildFile; fileRef = %s /* %s */; };',
 							node.buildid, node.name, xcode.getbuildcategory(node), node.id, node.name)
+						if node.isembedded then
+							_p(level, '%s /* %s in %s */ = {isa = PBXBuildFile; fileRef = %s /* %s */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; }; ',
+							   node.embedid, node.name, 'Embed Frameworks', node.id, node.name)
+						end
 					end
 				end
 			end
@@ -507,6 +512,28 @@
 		end
 	end
 
+	function xcode.PBXCopyFilesBuildPhase(tr)
+		_p('/* Begin PBXCopyFilesBuildPhase section */')
+		_p(2, '%s /* Embed Frameworks */ = {', XCODE_ID_EMBED_FRAMEWORKS)
+		_p(3, 'isa = PBXCopyFilesBuildPhase;')
+		_p(3, 'buildActionMask = 2147483647;')
+		_p(3, 'dstPath = "";')
+		_p(3, 'dstSubfolderSpec = 10;')
+		_p(3, 'files = (')
+		tree.traverse(tr.frameworks, {
+			onleaf = function(node)
+				if node.isembedded then
+					_p(4, '%s /* %s in Embed Frameworks */,', node.embedid, node.name)
+				end
+			end
+		})
+		_p(3, ');')
+		_p(3, 'name = "Embed Frameworks";');
+		_p(3, 'runOnlyForDeploymentPostprocessing = 0;');
+		_p(2, '};')
+		_p('/* End PBXCopyFilesBuildPhase section */')
+		_p('')
+	end
 
 	function xcode.PBXFrameworksBuildPhase(tr)
 		_p('/* Begin PBXFrameworksBuildPhase section */')
@@ -635,6 +662,7 @@
 			if hasBuildCommands('postbuildcommands') then
 				_p(4,'9607AE3710C85E8F00CD1376 /* Postbuild */,')
 			end
+			_p(4, '%s /* Embed Frameworks */,', XCODE_ID_EMBED_FRAMEWORKS)
 			_p(3,');')
 			_p(3,'buildRules = (')
 			_p(3,');')
@@ -941,6 +969,8 @@
 			settings['EXCLUDED_SOURCE_FILE_NAMES'] = fileNameList
 		end
 		settings['PRODUCT_NAME'] = cfg.buildtarget.basename
+
+		settings['LD_RUNPATH_SEARCH_PATHS'] = "$(inherited) @executable_path/../Frameworks";
 
 		--ms not by default ...add it manually if you need it
 		--settings['COMBINE_HIDPI_IMAGES'] = 'YES'

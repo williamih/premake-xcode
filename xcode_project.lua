@@ -75,6 +75,14 @@
 					node.path = link
 		 		end
 		 	end
+			for _, link in ipairs(cfg.xcodeembeddedframeworks) do
+				local name = path.getname(link)
+				if xcode.isframework(name) and not tr.frameworks.children[name] then
+					node = tree.insert(tr.frameworks, tree.new(name))
+					node.path = link
+					node.isembedded = true
+				end
+			end
 		 end
 
 		-- only add it to the tree if there are frameworks to link
@@ -122,6 +130,9 @@
 		 		-- assign build IDs to buildable files
 		 		if xcode.getbuildcategory(node) then
 		 			node.buildid = xcode.newid(node.name, "build", node.path)
+					if node.isembedded then
+						node.embedid = xcode.newid(node.name, "embed", node.path)
+					end
 		 		end
 
 		 		-- remember key files that are needed elsewhere
@@ -162,6 +173,7 @@
 		xcode.PBXBuildFile(tr)
 		xcode.PBXContainerItemProxy(tr)
 		xcode.PBXFileReference(tr)
+		xcode.PBXCopyFilesBuildPhase(tr)
 		xcode.PBXFrameworksBuildPhase(tr)
 		xcode.PBXGroup(tr)
 		xcode.PBXNativeTarget(tr)

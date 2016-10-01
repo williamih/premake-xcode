@@ -191,9 +191,7 @@
 
 	local function customStringifySetting(value)
 		value = value..''
-
-		local test = value:match('^[%a%d_./%+]+$')
-		if test then
+		if not value:match('^[%a%d_./%+]+$') then
 			value = '"'..escapeSetting(value)..'"'
 		end
 		return value

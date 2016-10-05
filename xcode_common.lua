@@ -699,6 +699,15 @@
 		_p('/* Begin PBXProject section */')
 		_p(2,'08FB7793FE84155DC02AAC07 /* Project object */ = {')
 		_p(3,'isa = PBXProject;')
+		_p(3,'attributes = {')
+		_p(4,'TargetAttributes = {')
+		for _, node in ipairs(tr.products.children) do
+			_p(5,'%s = {', node.targetid)
+			_p(6,'LastSwiftMigration = 0800;')
+			_p(5,'};')
+		end
+		_p(4,'};')
+		_p(3,'};')
 		_p(3,'buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "%s" */;', tr.name)
 		_p(3,'compatibilityVersion = "Xcode 3.2";')
 		_p(3,'hasScannedForEncodings = 1;')
@@ -971,6 +980,7 @@
 		settings['PRODUCT_NAME'] = cfg.buildtarget.basename
 
 		settings['LD_RUNPATH_SEARCH_PATHS'] = "$(inherited) @executable_path/../Frameworks";
+		settings['SWIFT_VERSION'] = "3.0"
 
 		--ms not by default ...add it manually if you need it
 		--settings['COMBINE_HIDPI_IMAGES'] = 'YES'
